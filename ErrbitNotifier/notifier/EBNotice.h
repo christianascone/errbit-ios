@@ -23,23 +23,7 @@
  */
 
 #import <Foundation/Foundation.h>
-
-// notice info
-typedef struct eb_signal_info_t {
-	
-	// file name used for a signal notice
-	const char *notice_path;
-    
-  // notice payload
-  unsigned long notice_payload_length;
-  void *notice_payload;
-    
-  // environment info
-  unsigned long user_data_length;
-  void *user_data;
-	
-} eb_signal_info_t;
-eb_signal_info_t eb_signal_info;
+#import "EBNotifier.h"
 
 // notice payload keys
 extern NSString * const EBNotifierOperatingSystemVersionKey;
@@ -68,21 +52,21 @@ extern const int EBNotifierExceptionNoticeType;
  of the properties that get posted to Airbrake.
  
  All of the properties represented as instance variables are persisted in the
- file representation of the object. Those that are not are pulled from 
+ file representation of the object. Those that are not are pulled from
  HTNotifier at runtime (primarily the API key).
  
  */
 @interface EBNotice : NSObject {
-    NSString *__environmentName;
-    NSString *__bundleVersion;
-    NSString *__exceptionName;
-    NSString *__exceptionReason;
-    NSString *__controller;
-    NSString *__action;
-    NSString *__executable;
-    NSDictionary *__environmentInfo;
-    NSArray *__callStack;
-    NSNumber *__noticeVersion;
+  NSString *__environmentName;
+  NSString *__bundleVersion;
+  NSString *__exceptionName;
+  NSString *__exceptionReason;
+  NSString *__controller;
+  NSString *__action;
+  NSString *__executable;
+  NSDictionary *__environmentInfo;
+  NSArray *__callStack;
+  NSNumber *__noticeVersion;
 }
 
 // create an object representation of notice data

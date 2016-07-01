@@ -1,5 +1,5 @@
 /*
-
+ 
  Copyright (C) 2011 GUI Cocoa, LLC.
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,6 +24,7 @@
 
 #import <TargetConditionals.h>
 #import <UIKit/UIKit.h>
+#import "EBNotifier.h"
 
 /*
  

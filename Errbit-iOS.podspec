@@ -22,7 +22,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "Errbit-iOS"
-  s.version      = "3.2.0"
+  s.version      = "3.2.1"
   s.summary      = "A Airbrake Compatible Notifier for iOS."
   s.homepage     = "http://airbrake.io/pages/ios-notifier"
   s.author       = { "Airbrake" => "support@airbrake.io" }
@@ -56,6 +56,11 @@ LICENSE
   s.frameworks   = 'SystemConfiguration'  
   s.libraries    = 'xml2'
   s.dependency   'KissXML'
-  s.xcconfig     = { 'HEADER_SEARCH_PATHS' => '"$(SDKROOT)/usr/include/libxml2"' }
+  s.dependency 	 'KissXML/libxml_module'
+  s.xcconfig     = { 
+  					'HEADER_SEARCH_PATHS' => '"$(SDKROOT)/usr/include/libxml2"',
+	  				'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
+					'GCC_NO_COMMON_BLOCKS' => 'NO'
+					}
   s.requires_arc = true
 end

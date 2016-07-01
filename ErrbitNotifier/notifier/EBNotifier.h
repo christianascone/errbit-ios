@@ -21,13 +21,13 @@
  THE SOFTWARE.
  
  */
-
+#import "EBNotice.h"
 #import <TargetConditionals.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <UIKit/UIKit.h>
 
 #ifndef __IPHONE_4_0
-  #error This version of the Airbrake notifier requires iOS 6.0 or later
+#error This version of the Airbrake notifier requires iOS 6.0 or later
 #endif
 
 #import "EBNotifierDelegate.h"
@@ -50,7 +50,7 @@ extern NSString * const EBNotifierAutomaticEnvironment;
 
 /*
  
- These notifications are designed to mirror the methods seen in 
+ These notifications are designed to mirror the methods seen in
  HTNotifierDelegate. They allow you to be aware of key events in the notifier
  outside of the single delegate. They will be posted on the main thread right
  after the associated delegate method is called.
@@ -82,7 +82,7 @@ extern NSString * const EBNotifierDidPostNoticesNotification;
  Exception Handler: choose whether or not to install the exception handler
  Signal Handler: choose whether or not to install the signal handler
  Display Prompt: choose whether or not a prompt will be shown to the user
-    before notices are posted
+ before notices are posted
  
  */
 + (void)startNotifierWithAPIKey:(NSString *)key

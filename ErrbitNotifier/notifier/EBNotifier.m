@@ -22,10 +22,10 @@
  
  */
 
-#import "EBNotice.h"
 #import "EBNotifierFunctions.h"
 #import "EBNotifier.h"
 #import "GCAlertView.h"
+#import "EBSignalInfo.h"
 
 // internal
 static SCNetworkReachabilityRef __reachability = nil;
@@ -94,7 +94,7 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
                 environmentName:(NSString *)name
                          useSSL:(BOOL)useSSL
                        delegate:(id<EBNotifierDelegate>)delegate {
-
+  
   [self startNotifierWithAPIKey:key
                   serverAddress:(NSString *)server
                 environmentName:name
@@ -112,7 +112,7 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
                        delegate:(id<EBNotifierDelegate>)delegate
         installExceptionHandler:(BOOL)exception
            installSignalHandler:(BOOL)signal {
-
+  
   [self startNotifierWithAPIKey:key
                   serverAddress:(NSString *)server
                 environmentName:name
@@ -134,21 +134,21 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
   @synchronized(self) {
     static BOOL token = YES;
     if (token) {
-
+      
       // change token5
       token = NO;
-
+      
       // register defaults
       [[NSUserDefaults standardUserDefaults] registerDefaults:
-                   [NSDictionary dictionaryWithObject:@"NO" forKey:EBNotifierAlwaysSendKey]];
-
+       [NSDictionary dictionaryWithObject:@"NO" forKey:EBNotifierAlwaysSendKey]];
+      
       // capture vars
       __userData = [[NSMutableDictionary alloc] init];
       __delegate = delegate;
       __useSSL = useSSL;
       __displayPrompt = display;
       __hostName = server;
-
+      
       // switch on api key
       if ([key length]) {
         __APIKey = [key copy];
@@ -161,54 +161,54 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
       } else {
         EBLog(@"The API key must not be blank. No notices will be posted.");
       }
-
+      
       // switch on environment name
       if ([name length]) {
-
+        
         // vars
         unsigned long length;
-
+        
         // cache signal notice file path
         NSString *fileName = [[NSProcessInfo processInfo] globallyUniqueString];
         const char *filePath = [[EBNotifier pathForNewNoticeWithName:fileName] UTF8String];
         length = (strlen(filePath) + 1);
         eb_signal_info.notice_path = malloc(length);
         memcpy((void *)eb_signal_info.notice_path, filePath, length);
-
+        
         // cache notice payload
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:
-                          [NSDictionary dictionaryWithObjectsAndKeys: name, EBNotifierEnvironmentNameKey,
-                               [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"],
-                                 EBNotifierBundleVersionKey,
-                                 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleExecutable"],
-                                 EBNotifierExecutableKey,
-                                 nil]];
+                        [NSDictionary dictionaryWithObjectsAndKeys: name, EBNotifierEnvironmentNameKey,
+                         [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"],
+                         EBNotifierBundleVersionKey,
+                         [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleExecutable"],
+                         EBNotifierExecutableKey,
+                         nil]];
         length = [data length];
         eb_signal_info.notice_payload = malloc(length);
         memcpy(eb_signal_info.notice_payload, [data bytes], length);
         eb_signal_info.notice_payload_length = length;
-
+        
         // cache user data
         [self addEnvironmentEntriesFromDictionary:
-             [NSMutableDictionary dictionaryWithObjectsAndKeys:
-              EBNotifierPlatformName(), EBNotifierPlatformNameKey,
-              EBNotifierOperatingSystemVersion(), EBNotifierOperatingSystemVersionKey,
-              EBNotifierApplicationVersion(), EBNotifierApplicationVersionKey,
-              nil]];
-
+         [NSMutableDictionary dictionaryWithObjectsAndKeys:
+          EBNotifierPlatformName(), EBNotifierPlatformNameKey,
+          EBNotifierOperatingSystemVersion(), EBNotifierOperatingSystemVersionKey,
+          EBNotifierApplicationVersion(), EBNotifierApplicationVersionKey,
+          nil]];
+        
         // start handlers
         if (exception) {
           EBNotifierStartExceptionHandler();
         }
-
+        
         if (signal) {
           EBNotifierStartSignalHandler();
         }
-
+        
         // log
         EBLog(@"Notifier %@ ready to catch errors", EBNotifierVersion);
         EBLog(@"Environment \"%@\"", name);
-
+        
       } else {
         EBLog(@"The environment name must not be blank. No new notices will be logged");
       }
@@ -231,7 +231,7 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
 
 #pragma mark - write data
 + (void)logException:(NSException *)exception parameters:(NSDictionary *)parameters {
-    
+  
   // force all activity onto main thread
   if (![NSThread isMainThread]) {
     dispatch_sync(dispatch_get_main_queue(), ^{
@@ -239,49 +239,49 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     });
     return;
   }
-    
+  
   // get file handle
   NSString *name = [[NSProcessInfo processInfo] globallyUniqueString];
   NSString *path = [self pathForNewNoticeWithName:name];
   int fd = EBNotifierOpenNewNoticeFile([path UTF8String], EBNotifierExceptionNoticeType);
-    
+  
   // write stuff
   if (fd > -1) {
     @try {
-
+      
       // create parameters
       NSMutableDictionary *exceptionParameters = [NSMutableDictionary dictionary];
       if ([parameters count]) {
         [exceptionParameters addEntriesFromDictionary:parameters];
       }
-
+      
       [exceptionParameters setValue:EBNotifierResidentMemoryUsage()
                              forKey:@"Resident Memory Size"];
-
+      
       [exceptionParameters setValue:EBNotifierVirtualMemoryUsage()
                              forKey:@"Virtual Memory Size"];
-
+      
       // write exception
       NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    [exception name], EBNotifierExceptionNameKey,
-                                    [exception reason], EBNotifierExceptionReasonKey,
-                                    [exception callStackSymbols], EBNotifierCallStackKey,
-                                    exceptionParameters, EBNotifierExceptionParametersKey,
-                                    EBNotifierCurrentViewController(), EBNotifierControllerKey,
-                                    nil];
-
+                                  [exception name], EBNotifierExceptionNameKey,
+                                  [exception reason], EBNotifierExceptionReasonKey,
+                                  [exception callStackSymbols], EBNotifierCallStackKey,
+                                  exceptionParameters, EBNotifierExceptionParametersKey,
+                                  EBNotifierCurrentViewController(), EBNotifierControllerKey,
+                                  nil];
+      
       NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dictionary];
       unsigned long length = [data length];
       write(fd, &length, sizeof(unsigned long));
       write(fd, [data bytes], length);
-
+      
       // delegate
       id<EBNotifierDelegate> delegate = [self delegate];
-
+      
       if ([delegate respondsToSelector:@selector(notifierDidLogException:)]) {
         [delegate notifierDidLogException:exception];
       }
-
+      
     }
     @catch (NSException *exception) {
       EBLog(@"Exception encountered while logging exception");
@@ -386,15 +386,15 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
 
 #pragma mark - post notices
 + (void)postNoticesWithPaths:(NSArray *)paths {
-    
+  
   // assert
   NSAssert(![NSThread isMainThread], @"This method must not be called on the main thread");
   NSAssert([paths count], @"No paths were provided");
-    
+  
   // get variables
   if ([paths count] == 0) { return; }
   id<EBNotifierDelegate> delegate = [EBNotifier delegate];
-    
+  
   // notify people
   dispatch_sync(dispatch_get_main_queue(), ^{
     if ([delegate respondsToSelector:@selector(notifierWillPostNotices)]) {
@@ -402,20 +402,20 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:EBNotifierWillPostNoticesNotification object:self];
   });
-    
+  
   // create url
   NSString *URLString = [NSString stringWithFormat:@"%@://%@/notifier_api/v2/notices",
-                                                   (__useSSL ? @"https" : @"http"),
-                                                   __hostName];
+                         (__useSSL ? @"https" : @"http"),
+                         __hostName];
   NSURL *URL = [NSURL URLWithString:URLString];
-    
+  
   // start background task
   __block BOOL keepPosting = YES;
   UIApplication *app = [UIApplication sharedApplication];
   UIBackgroundTaskIdentifier task = [app beginBackgroundTaskWithExpirationHandler:^{
     keepPosting = NO;
   }];
-    
+  
   // report each notice
   [paths enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
     if (keepPosting) {
@@ -424,12 +424,12 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
       *stop = YES;
     }
   }];
-    
+  
   // end background task
   if (task != UIBackgroundTaskInvalid) {
     [app endBackgroundTask:task];
   }
-
+  
   // notify people
   dispatch_sync(dispatch_get_main_queue(), ^{
     if ([delegate respondsToSelector:@selector(notifierDidPostNotices)]) {
@@ -437,27 +437,27 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:EBNotifierDidPostNoticesNotification object:self];
   });
-	
+  
 }
 
 + (void)postNoticeWithContentsOfFile:(NSString *)path toURL:(NSURL *)URL {
-    
+  
   // assert
   NSAssert(![NSThread isMainThread], @"This method must not be called on the main thread");
-    
+  
   // create url request
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
-	[request setTimeoutInterval:10.0];
-	[request setValue:@"text/xml" forHTTPHeaderField:@"Content-Type"];
-	[request setHTTPMethod:@"POST"];
-    
-	// get notice payload
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+  [request setTimeoutInterval:10.0];
+  [request setValue:@"text/xml" forHTTPHeaderField:@"Content-Type"];
+  [request setHTTPMethod:@"POST"];
+  
+  // get notice payload
   EBNotice *notice = [EBNotice noticeWithContentsOfFile:path];
-
+  
 #ifdef DEBUG
-    EBLog(@"%@", notice);
+  EBLog(@"%@", notice);
 #endif
-
+  
   NSString *XMLString = [notice errbitXMLString];
   if (XMLString) {
     NSData *data = [XMLString dataUsingEncoding:NSUTF8StringEncoding];
@@ -466,22 +466,22 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
     return;
   }
-	
-	// perform request
+  
+  // perform request
   NSError *error = nil;
-	NSHTTPURLResponse *response = nil;
-    
+  NSHTTPURLResponse *response = nil;
+  
 #ifdef DEBUG
   NSData *responseBody =
 #endif
-
+  
   [NSURLConnection sendSynchronousRequest:request
                         returningResponse:&response
                                     error:&error];
-
+  
   NSInteger statusCode = [response statusCode];
-	
-	// error checking
+  
+  // error checking
   if (error) {
     EBLog(@"Encountered error while posting notice.");
     EBLog(@"%@", error);
@@ -490,24 +490,24 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     [[NSFileManager defaultManager] removeItemAtPath:path
                                                error:nil];
   }
-	
-	// great success
-	if (statusCode == 200) {
+  
+  // great success
+  if (statusCode == 200) {
     EBLog(@"Crash report posted");
-	} else if (statusCode == 403) {
+  } else if (statusCode == 403) {
     // forbidden
     EBLog(@"Please make sure that your API key is correct and that your project supports SSL.");
   } else if (statusCode == 422) {
-      // invalid post
+    // invalid post
     EBLog(@"The posted notice payload is invalid.");
-
+    
 #ifdef DEBUG
     EBLog(@"%@", XMLString);
 #endif
   } else {
     // unknown
     EBLog(@"Encountered unexpected status code: %ld", (long)statusCode);
-
+    
 #ifdef DEBUG
     NSString *responseString = [[NSString alloc] initWithData:responseBody
                                                      encoding:NSUTF8StringEncoding];
@@ -519,12 +519,12 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
 #pragma mark - cache methods
 + (void)cacheUserDataDictionary {
   @synchronized(self) {
-
+    
     // free old cached value
     free(eb_signal_info.user_data);
     eb_signal_info.user_data_length = 0;
     eb_signal_info.user_data = nil;
-
+    
     // cache new value
     if (__userData) {
       NSData *data = [NSKeyedArchiver archivedDataWithRootObject:__userData];
@@ -541,30 +541,30 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
   // assert
   NSAssert([NSThread isMainThread], @"This method must be called on the main thread");
   NSAssert([paths count], @"No paths were provided");
-    
+  
   // get delegate
   id<EBNotifierDelegate> delegate = [self delegate];
-    
+  
   // alert title
   NSString *title = nil;
   if ([delegate respondsToSelector:@selector(titleForNoticeAlert)]) {
     title = [delegate titleForNoticeAlert];
   }
-
+  
   if (title == nil) {
     title = EBLocalizedString(@"NOTICE_TITLE");
   }
-    
+  
   // alert body
   NSString *body = nil;
   if ([delegate respondsToSelector:@selector(bodyForNoticeAlert)]) {
     body = [delegate bodyForNoticeAlert];
   }
-
+  
   if (body == nil) {
     body = [NSString stringWithFormat:EBLocalizedString(@"NOTICE_BODY"), EBNotifierApplicationName()];
   }
-    
+  
   // declare blocks
   void (^delegateDismissBlock) (void) = ^{
     if ([delegate respondsToSelector:@selector(notifierDidDismissAlert)]) {
@@ -573,7 +573,7 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     [[NSNotificationCenter defaultCenter] postNotificationName:EBNotifierDidDismissAlertNotification
                                                         object:self];
   };
-
+  
   void (^delegatePresentBlock) (void) = ^{
     if ([delegate respondsToSelector:@selector(notifierWillDisplayAlert)]) {
       [delegate notifierWillDisplayAlert];
@@ -581,32 +581,32 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
     [[NSNotificationCenter defaultCenter] postNotificationName:EBNotifierWillDisplayAlertNotification
                                                         object:self];
   };
-
+  
   void (^postNoticesBlock) (void) = ^{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
       [self postNoticesWithPaths:paths];
     });
   };
-
+  
   void (^deleteNoticesBlock) (void) = ^{
     NSFileManager *manager = [NSFileManager defaultManager];
     [paths enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
       [manager removeItemAtPath:obj error:nil];
     }];
   };
-
+  
   void (^setDefaultsBlock) (void) = ^{
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:EBNotifierAlwaysSendKey];
     [defaults synchronize];
   };
-
+  
   GCAlertView *alert = [[GCAlertView alloc] initWithTitle:title message:body];
   [alert addButtonWithTitle:EBLocalizedString(@"ALWAYS_SEND") block:^{
     setDefaultsBlock();
     postNoticesBlock();
   }];
-
+  
   [alert addButtonWithTitle:EBLocalizedString(@"SEND") block:postNoticesBlock];
   [alert addButtonWithTitle:EBLocalizedString(@"DONT_SEND") block:deleteNoticesBlock];
   [alert setDidDismissBlock:delegateDismissBlock];
@@ -620,16 +620,16 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
   if ((flags & kSCNetworkReachabilityFlagsReachable) == 0) {
     return NO;
   }
-
+  
   if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0) {
     return YES;
   }
-
+  
   if  (((flags & kSCNetworkReachabilityFlagsConnectionOnDemand) != 0) ||
-      ((flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0)) {
-        if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0) {
-          return YES;
-        }
+       ((flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0)) {
+    if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0) {
+      return YES;
+    }
   }
   return NO;
 }
@@ -644,7 +644,7 @@ void EBNotifierReachabilityDidChange(SCNetworkReachabilityRef target, SCNetworkR
       NSArray *paths = [EBNotifier pathsForAllNotices];
       if ([paths count]) {
         if ([[NSUserDefaults standardUserDefaults] boolForKey:EBNotifierAlwaysSendKey] ||
-              !__displayPrompt) {
+            !__displayPrompt) {
           dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [EBNotifier postNoticesWithPaths:paths];
           });

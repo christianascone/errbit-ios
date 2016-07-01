@@ -56,6 +56,7 @@
 		6149B6E11697CA3D007D5DF7 /* EBNotifierDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EBNotifierDelegate.h; sourceTree = "<group>"; };
 		6149B6E21697CA3D007D5DF7 /* EBNotifierFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EBNotifierFunctions.h; sourceTree = "<group>"; };
 		6149B6E31697CA3D007D5DF7 /* EBNotifierFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EBNotifierFunctions.m; sourceTree = "<group>"; };
+		A768805F1D266A8A0030A3D8 /* EBSignalInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EBSignalInfo.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				6149B6DC1697CA3D007D5DF7 /* EBNotice.h */,
+				A768805F1D266A8A0030A3D8 /* EBSignalInfo.h */,
 				6149B6DD1697CA3D007D5DF7 /* EBNotice.m */,
 				6149B6DF1697CA3D007D5DF7 /* EBNotifier.h */,
 				6149B6E01697CA3D007D5DF7 /* EBNotifier.m */,
