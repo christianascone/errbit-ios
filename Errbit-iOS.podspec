@@ -55,7 +55,7 @@ LICENSE
   s.resources    = "ErrbitNotifier/notifier/*.lproj"
   s.frameworks   = 'SystemConfiguration'  
   s.libraries    = 'xml2'
-  s.dependency   'KissXML'
+  s.dependency   'KissXML', '5.0.3'
   s.dependency 	 'KissXML/libxml_module'
   s.xcconfig     = { 
   					'HEADER_SEARCH_PATHS' => '"$(SDKROOT)/usr/include/libxml2"',
