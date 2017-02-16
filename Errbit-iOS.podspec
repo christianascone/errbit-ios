@@ -60,7 +60,9 @@ LICENSE
   s.xcconfig     = { 
   					'HEADER_SEARCH_PATHS' => '"$(SDKROOT)/usr/include/libxml2"',
 	  				'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
-					'GCC_NO_COMMON_BLOCKS' => 'NO'
 					}
+  s.pod_target_xcconfig = { 
+		'GCC_NO_COMMON_BLOCKS' => 'NO'
+	  }
   s.requires_arc = true
 end
